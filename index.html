@@ -347,71 +347,63 @@
   }
   .back{font-family:var(--mono);font-size:12px;color:#000;letter-spacing:.1em;cursor:pointer;margin-bottom:14px;display:inline-block;}
 
-  /* intro: spinning zoom on the spy */
+  /* intro: a spotlight searching a dark alley until it finds the spy */
   #intro{
     position:fixed; inset:0; z-index:100;
     background:#000;
     overflow:hidden;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
     cursor:pointer;
-    clip-path:circle(150% at 50% 46%);
+    clip-path:circle(150% at 50% 50%);
   }
   #intro.out{animation:iris .55s cubic-bezier(.7,0,.9,.4) forwards;}
-  @keyframes iris{to{clip-path:circle(0% at 50% 46%);}}
-  .vortex{
-    position:absolute; left:50%; top:46%;
-    width:260vmax; height:260vmax;
-    margin:-130vmax 0 0 -130vmax;
-    isolation:isolate;
-    animation:vortexZoom 2.6s cubic-bezier(.3,0,.2,1) forwards;
-  }
-  .vortex::before, .vortex::after{content:"";position:absolute;inset:0;border-radius:50%;}
-  .vortex::before{background:var(--rays);animation:spin 1.6s linear infinite;}
-  .vortex::after{
-    background:repeating-radial-gradient(circle, #fff 0 3vmax, #000 3vmax 6vmax);
-    mix-blend-mode:difference;
-    animation:spin 2.4s linear infinite reverse;
-  }
-  @keyframes vortexZoom{from{transform:scale(.35);} to{transform:scale(1.6);}}
-  .intro-spot{
-    position:relative;
-    width:min(62vmin, 300px); height:min(62vmin, 300px);
+  @keyframes iris{to{clip-path:circle(0% at 50% 50%);}}
+  #alley{position:absolute; inset:0; width:100%; height:100%; display:block; overflow:visible;}
+  #alley text{font-family:var(--display);}
+  .spot{
+    position:absolute; left:50%; top:50%;
+    width:min(64vmin, 330px); height:min(64vmin, 330px);
     border-radius:50%;
-    background:#fff;
-    border:6px solid #000;
-    box-shadow:0 0 0 6px #fff, 0 0 0 14px #000;
-    overflow:hidden;
-    animation:spyIn 1.7s cubic-bezier(.15,.7,.2,1.08) both;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle closest-side, transparent 64%, rgba(0,0,0,.985) 100%);
+    box-shadow:0 0 0 300vmax rgba(0,0,0,.985);
+    pointer-events:none;
+    animation:search 2.7s both, found .6s cubic-bezier(.2,1.6,.4,1) 2.7s both;
   }
-  .intro-spot svg{position:absolute;left:50%;bottom:-7%;width:86%;transform:translateX(-50%);}
-  @keyframes spyIn{
-    0%{transform:scale(.04) rotate(-900deg);}
-    100%{transform:scale(1) rotate(0deg);}
+  @keyframes search{
+    0%  {left:20%; top:20%; animation-timing-function:cubic-bezier(.5,0,.4,1);}
+    15% {left:80%; top:28%; animation-timing-function:cubic-bezier(.5,0,.4,1);}
+    30% {left:26%; top:74%; animation-timing-function:cubic-bezier(.5,0,.4,1);}
+    45% {left:78%; top:70%; animation-timing-function:cubic-bezier(.5,0,.4,1);}
+    60% {left:24%; top:42%; animation-timing-function:cubic-bezier(.5,0,.4,1);}
+    75% {left:68%; top:52%; animation-timing-function:cubic-bezier(.3,0,.2,1);}
+    92%,100% {left:50%; top:50%;}
   }
+  @keyframes found{0%{scale:1;} 100%{scale:1.3;}}
   .intro-title{
-    position:relative;
+    position:absolute; left:50%; bottom:max(13%, 70px);
     font-family:var(--display);
-    font-size:min(26vmin, 140px);
+    font-size:min(24vmin, 130px);
     letter-spacing:.06em;
     line-height:1;
     color:#fff;
-    -webkit-text-stroke:3px #000;
-    text-shadow:6px 6px 0 #000;
-    margin-top:18px;
-    padding:6px 22px 0;
+    text-shadow:6px 6px 0 #444;
+    padding:8px 22px 0;
     background:#000;
-    transform:rotate(-3deg);
-    animation:slam .45s cubic-bezier(.2,1.8,.4,1) 1.55s both;
+    border:3px solid #fff;
+    transform:translateX(-50%) rotate(-3deg);
+    animation:slam .45s cubic-bezier(.2,1.8,.4,1) 2.9s both;
   }
-  @keyframes slam{0%{opacity:0;transform:scale(3.2) rotate(-12deg);} 100%{opacity:1;transform:scale(1) rotate(-3deg);}}
+  @keyframes slam{0%{opacity:0;transform:translateX(-50%) scale(3.2) rotate(-12deg);} 100%{opacity:1;transform:translateX(-50%) scale(1) rotate(-3deg);}}
   .intro-skip{
     position:absolute; bottom:max(20px, env(safe-area-inset-bottom)); left:0; right:0;
     text-align:center;
-    font-family:var(--mono); font-size:11px; letter-spacing:.24em; color:#fff;
-    mix-blend-mode:difference;
+    font-family:var(--mono); font-size:11px; letter-spacing:.24em; color:#888;
+  }
+  @media (min-aspect-ratio: 1/1){
+    .intro-title{bottom:5%; font-size:min(15vmin, 110px);}
   }
   @media (prefers-reduced-motion: reduce){
-    .vortex, .vortex::before, .vortex::after, .intro-spot, .intro-title, .emblem::before{animation:none !important;}
+    .spot, .intro-title, .emblem::before{animation:none !important;}
   }
 </style>
 </head>
@@ -445,8 +437,87 @@
 </svg>
 
 <div id="intro" aria-hidden="true">
-  <div class="vortex"></div>
-  <div class="intro-spot"><svg viewBox="0 0 200 240"><use href="#spy"/></svg></div>
+  <svg id="alley" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice">
+    <defs>
+      <pattern id="brick" width="48" height="24" patternUnits="userSpaceOnUse">
+        <rect width="48" height="24" fill="#d2d2d2"/>
+        <path d="M0 .75H48M0 12.75H48M24 0V12M.75 12V24M47.25 12V24" stroke="#000" stroke-width="1.5"/>
+      </pattern>
+      <clipPath id="groundClip"><polygon points="-1000,2143 350,330 450,330 1800,2143"/></clipPath>
+    </defs>
+    <!-- sky, moon and distant skyline at the end of the alley -->
+    <polygon points="-1000,-1200 1800,-1200 1800,-571 450,200 350,200 -1000,-571" fill="#f4f4f4"/>
+    <circle cx="400" cy="80" r="34" fill="#fff" stroke="#000" stroke-width="3"/>
+    <circle cx="390" cy="72" r="6" fill="none" stroke="#000" stroke-width="2"/>
+    <circle cx="412" cy="92" r="4" fill="none" stroke="#000" stroke-width="2"/>
+    <path d="M352 200V150H372V132H386V200ZM386 200V118H404V104H412V118H420V200ZM420 200V158H448V200Z" fill="#000"/>
+    <path d="M358 160h4v5h-4zM392 128h4v5h-4zM404 140h4v5h-4zM392 160h4v5h-4zM428 168h4v5h-4zM436 182h4v5h-4zM376 146h4v5h-4z" fill="#fff"/>
+    <!-- far wall -->
+    <rect x="350" y="200" width="100" height="130" fill="#9a9a9a" stroke="#000" stroke-width="3"/>
+    <rect x="372" y="236" width="22" height="30" fill="#fff" stroke="#000" stroke-width="3"/>
+    <rect x="408" y="236" width="22" height="30" fill="#000"/>
+    <!-- ground -->
+    <polygon points="-1000,2143 350,330 450,330 1800,2143" fill="#e4e4e4" stroke="#000" stroke-width="3"/>
+    <g clip-path="url(#groundClip)" stroke="#000" stroke-width="2" fill="none">
+      <path d="M380 330L130 800M400 330V800M420 330L670 800M360 330L-120 800M440 330L920 800"/>
+      <path d="M-1000 372H1800M-1000 430H1800M-1000 505H1800M-1000 600H1800M-1000 720H1800M-1000 870H1800"/>
+    </g>
+    <!-- left wall with fire escape and window -->
+    <polygon points="-1000,-571 350,200 350,330 -1000,2143" fill="url(#brick)" stroke="#000" stroke-width="3"/>
+    <polygon points="-1000,-571 350,200 350,330 -1000,2143" fill="#000" opacity=".12"/>
+    <g fill="#000">
+      <polygon points="180,150 330,226 330,236 180,163"/>
+      <polygon points="180,330 330,352 330,362 180,343"/>
+    </g>
+    <g stroke="#000" stroke-width="3" fill="none">
+      <path d="M180 112L330 196M180 290L330 322"/>
+      <path d="M200 124V158M240 146V180M280 168V200M320 190V222M200 296V334M240 304V340M280 310V346M320 318V352"/>
+      <path d="M250 180L292 345M266 186L308 348"/>
+      <path d="M254 196H270M258 214H274M263 232H279M267 250H283M272 268H288M276 286H292M281 304H297M285 322H301"/>
+    </g>
+    <polygon points="232,398 300,388 300,452 232,464" fill="#000"/>
+    <path d="M266 393V458M232 431L300 420" stroke="#fff" stroke-width="3"/>
+    <!-- right wall with hotel sign and door -->
+    <polygon points="1800,-571 450,200 450,330 1800,2143" fill="url(#brick)" stroke="#000" stroke-width="3"/>
+    <polygon points="1800,-571 450,200 450,330 1800,2143" fill="#000" opacity=".2"/>
+    <path d="M530 132H560" stroke="#000" stroke-width="4"/>
+    <rect x="486" y="132" width="46" height="222" fill="#000" stroke="#fff" stroke-width="3"/>
+    <g fill="#fff" font-size="36" text-anchor="middle">
+      <text x="509" y="174">H</text><text x="509" y="216">O</text><text x="509" y="258">T</text><text x="509" y="300">E</text><text x="509" y="342">L</text>
+    </g>
+    <polygon points="700,340 750,322 750,720 700,655" fill="#000"/>
+    <rect x="710" y="360" width="16" height="22" fill="#fff"/>
+    <!-- street lamp -->
+    <g fill="#000">
+      <rect x="600" y="330" width="9" height="420"/>
+      <path d="M600 334Q600 300 634 300L644 300V308L634 308Q608 308 608 334Z"/>
+      <polygon points="628,304 656,304 666,326 618,326"/>
+      <rect x="590" y="742" width="29" height="16"/>
+    </g>
+    <path d="M618 326Q642 340 666 326" stroke="#fff" stroke-width="3" fill="none"/>
+    <!-- trash cans with a cat -->
+    <g stroke="#000" stroke-width="3">
+      <rect x="226" y="592" width="74" height="100" fill="#fff"/>
+      <path d="M244 600V684M263 600V684M282 600V684" fill="none"/>
+      <ellipse cx="263" cy="592" rx="42" ry="10" fill="#000"/>
+    </g>
+    <path d="M244 584Q242 552 256 540L252 522L264 534L276 534L284 520L284 542Q296 556 290 584Z" fill="#000"/>
+    <path d="M290 580Q312 578 314 552" stroke="#000" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M259 548l7 3M279 548l-7 3" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+    <!-- puddle -->
+    <ellipse cx="500" cy="720" rx="74" ry="12" fill="#fff" stroke="#000" stroke-width="3"/>
+    <path d="M458 720H486M510 716H540M478 726H500" stroke="#000" stroke-width="2"/>
+    <!-- the spy, standing in the middle of the alley -->
+    <ellipse cx="400" cy="648" rx="80" ry="11" fill="#000" opacity=".55"/>
+    <polygon points="326,476 474,476 454,612 346,612" fill="#000"/>
+    <path d="M400 480V612M336 528H464" stroke="#fff" stroke-width="2.5"/>
+    <rect x="377" y="610" width="17" height="34" fill="#000"/>
+    <rect x="406" y="610" width="17" height="34" fill="#000"/>
+    <ellipse cx="381" cy="646" rx="16" ry="6" fill="#000"/>
+    <ellipse cx="419" cy="646" rx="16" ry="6" fill="#000"/>
+    <use href="#spy" x="320" y="288" width="160" height="192"/>
+  </svg>
+  <div class="spot"></div>
   <div class="intro-title">SPIES</div>
   <div class="intro-skip">TAP TO SKIP</div>
 </div>
@@ -643,6 +714,8 @@
   // ---- intro ----
   (function(){
     const intro = $('intro');
+    const fit = ()=> $('alley').setAttribute('preserveAspectRatio', innerWidth > innerHeight ? 'xMidYMid meet' : 'xMidYMid slice');
+    fit(); addEventListener('resize', fit);
     let done = false;
     const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     function finish(){
@@ -651,7 +724,7 @@
       setTimeout(()=> intro.remove(), 600);
     }
     intro.addEventListener('click', finish);
-    setTimeout(finish, reduce ? 600 : 2700);
+    setTimeout(finish, reduce ? 900 : 4000);
   })();
 
   // ---- installable app ----
