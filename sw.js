@@ -1,6 +1,6 @@
 // Spies service worker: makes the game installable and lets pass & play work offline.
 // Online lobbies (/api) always go straight to the network.
-const CACHE = 'spies-v5';
+const CACHE = 'spies-v4';
 const CORE = ['/', '/manifest.webmanifest', '/fonts/bangers.woff2', '/fonts/special-elite.woff2', '/icons/icon-192.png'];
 
 self.addEventListener('install', e => {
