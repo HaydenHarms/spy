@@ -352,6 +352,21 @@
     margin:14px 0 0;
   }
   .tap-hide{cursor:pointer;}
+  .small-btn{
+    margin-top:22px;
+    padding:8px 14px;
+    background:transparent;
+    color:var(--paper-dim);
+    border:1px solid var(--stamp-dim);
+    border-radius:3px;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    cursor:pointer;
+  }
+  .small-btn:active{background:#2b3341;}
+  .small-btn:disabled{opacity:0.4;}
   .cover{
     background:var(--panel-raised);
     border:1px dashed var(--line);
@@ -438,7 +453,7 @@
         <div class="room-label" id="gameRound">ROUND</div>
         <div id="gameCardWrap" style="margin-top:14px;"></div>
         <div class="wait-note" id="gameNote">Tap the card to hide it before anyone sees your screen.</div>
-        <button class="primary" id="gameReveal" style="display:none;margin-top:18px;">REVEAL LOCATION &amp; SPY</button>
+        <div class="center"><button class="small-btn" id="gameReveal" style="display:none;">Reveal location &amp; spy</button></div>
         <div class="err" id="gameErr"></div>
         <div class="link" id="viewLocsLink4">View all possible locations</div>
         <div class="link" id="gameLeave">Leave lobby</div>
@@ -577,6 +592,11 @@
   }
   ['viewLocsLink','viewLocsLink2','viewLocsLink3','viewLocsLink4'].forEach(id=> $(id).onclick = openLocs);
   $('closeLocsBtn').onclick = ()=> show(locsReturn);
+  // Polling uses this so it never yanks the player off the locations list.
+  function goTo(id){
+    if($('screen-locs').classList.contains('active')){ locsReturn = id; return; }
+    if(!$(id).classList.contains('active')) show(id);
+  }
 
   // ---- home navigation ----
   $('homePassBtn').onclick = ()=> show('screen-setup');
@@ -717,7 +737,7 @@
         ? (enough ? st.players.length + ' players ready.' : 'Waiting for at least ' + st.minPlayers + ' players to join.')
         : 'Waiting for the host to start the game.';
       $('roomErr').textContent = '';
-      if(!$('screen-room').classList.contains('active')) show('screen-room');
+      goTo('screen-room');
     } else if(st.phase === 'playing'){
       if(st.round !== lastRenderedRound){
         lastRenderedRound = st.round;
@@ -725,16 +745,16 @@
         renderCard(st);
         $('gameRound').textContent = 'ROUND ' + st.round;
       }
-      $('gameReveal').style.display = st.isHost ? 'block' : 'none';
+      $('gameReveal').style.display = st.isHost ? 'inline-block' : 'none';
       $('gameErr').textContent = '';
-      if(!$('screen-game').classList.contains('active')) show('screen-game');
+      goTo('screen-game');
     } else if(st.phase === 'revealed'){
       $('resLocation').textContent = st.reveal.location;
       $('resSpy').textContent = st.reveal.spyName;
       $('resAgain').style.display = st.isHost ? 'block' : 'none';
       $('resNote').textContent = st.isHost ? '' : 'Waiting for the host to start the next round.';
       $('resErr').textContent = '';
-      if(!$('screen-result').classList.contains('active')) show('screen-result');
+      goTo('screen-result');
     }
   }
 
