@@ -278,6 +278,101 @@
   .screen.active{display:block;}
   .fade-in{animation:fadeIn .25s ease;}
   @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  /* lobby */
+  .menu-btn{margin-top:12px;}
+  input.text{
+    width:100%;
+    padding:14px;
+    background:var(--panel-raised);
+    color:var(--paper);
+    border:1px solid var(--line);
+    border-radius:3px;
+    font-family:var(--serif);
+    font-size:17px;
+    outline:none;
+  }
+  input.text:focus{border-color:var(--manila);}
+  input.code{
+    font-family:var(--mono);
+    font-size:28px;
+    letter-spacing:.4em;
+    text-align:center;
+    text-transform:uppercase;
+  }
+  .err{
+    color:#e7a8a3;
+    font-family:var(--mono);
+    font-size:12px;
+    min-height:16px;
+    margin:10px 0 0;
+    text-align:center;
+  }
+  .room-code{
+    font-family:var(--mono);
+    font-size:46px;
+    letter-spacing:.3em;
+    text-align:center;
+    color:var(--paper);
+    margin:6px 0 2px;
+    padding-left:.3em;
+  }
+  .room-label{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    color:var(--manila);
+    text-align:center;
+  }
+  .plist{
+    list-style:none;
+    margin:18px 0 18px;
+    padding:0;
+    border-top:1px solid var(--line);
+  }
+  .plist li{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:11px 2px;
+    border-bottom:1px solid var(--line);
+    font-size:16px;
+  }
+  .plist .badge{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:.12em;
+    color:var(--manila);
+  }
+  .wait-note{
+    text-align:center;
+    color:var(--paper-dim);
+    font-family:var(--mono);
+    font-size:12px;
+    margin:14px 0 0;
+  }
+  .tap-hide{cursor:pointer;}
+  .cover{
+    background:var(--panel-raised);
+    border:1px dashed var(--line);
+    border-radius:3px;
+    padding:34px 20px;
+    text-align:center;
+    font-family:var(--mono);
+    font-size:13px;
+    letter-spacing:.12em;
+    color:var(--paper-dim);
+    cursor:pointer;
+  }
+  .back{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--paper-dim);
+    letter-spacing:.08em;
+    cursor:pointer;
+    margin-bottom:14px;
+    display:inline-block;
+  }
 </style>
 </head>
 <body>
@@ -287,8 +382,85 @@
     <div class="tab"><span>CLASSIFIED</span><span id="tabRight">FILE NO. 12-A</span></div>
     <div class="body">
 
+      <!-- HOME SCREEN -->
+      <div class="screen active" id="screen-home">
+        <h1>The Dossier</h1>
+        <p class="sub">A deduction game. Everyone but one gets the same location and a role there. The spy gets nothing, and has to bluff their way through the questions.</p>
+        <button class="primary" id="homeCreateBtn">CREATE A LOBBY</button>
+        <button class="ghost" id="homeJoinBtn">JOIN WITH A CODE</button>
+        <button class="ghost" id="homePassBtn">PASS &amp; PLAY ON ONE PHONE</button>
+        <div class="link" id="viewLocsLink3">View all possible locations</div>
+      </div>
+
+      <!-- CREATE LOBBY -->
+      <div class="screen" id="screen-create">
+        <span class="back" id="createBack">&larr; BACK</span>
+        <h1>Create a lobby</h1>
+        <p class="sub">You'll get a 4-letter code to share with the other players.</p>
+        <div class="field">
+          <label>YOUR NAME</label>
+          <input class="text" id="createName" maxlength="16" autocomplete="off" placeholder="Agent name">
+        </div>
+        <button class="primary" id="createGo">CREATE LOBBY</button>
+        <div class="err" id="createErr"></div>
+      </div>
+
+      <!-- JOIN LOBBY -->
+      <div class="screen" id="screen-join">
+        <span class="back" id="joinBack">&larr; BACK</span>
+        <h1>Join a lobby</h1>
+        <p class="sub">Enter the code from the host's screen.</p>
+        <div class="field">
+          <label>LOBBY CODE</label>
+          <input class="text code" id="joinCode" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="ABCD">
+        </div>
+        <div class="field">
+          <label>YOUR NAME</label>
+          <input class="text" id="joinName" maxlength="16" autocomplete="off" placeholder="Agent name">
+        </div>
+        <button class="primary" id="joinGo">JOIN LOBBY</button>
+        <div class="err" id="joinErr"></div>
+      </div>
+
+      <!-- WAITING ROOM -->
+      <div class="screen" id="screen-room">
+        <div class="room-label">LOBBY CODE</div>
+        <div class="room-code" id="roomCode">----</div>
+        <ul class="plist" id="roomPlayers"></ul>
+        <button class="primary" id="roomStart" style="display:none;">START GAME</button>
+        <div class="wait-note" id="roomNote"></div>
+        <div class="err" id="roomErr"></div>
+        <div class="link" id="roomLeave">Leave lobby</div>
+      </div>
+
+      <!-- ONLINE GAME -->
+      <div class="screen" id="screen-game">
+        <div class="room-label" id="gameRound">ROUND</div>
+        <div id="gameCardWrap" style="margin-top:14px;"></div>
+        <div class="wait-note" id="gameNote">Tap the card to hide it before anyone sees your screen.</div>
+        <button class="primary" id="gameReveal" style="display:none;margin-top:18px;">REVEAL LOCATION &amp; SPY</button>
+        <div class="err" id="gameErr"></div>
+        <div class="link" id="viewLocsLink4">View all possible locations</div>
+        <div class="link" id="gameLeave">Leave lobby</div>
+      </div>
+
+      <!-- ONLINE RESULT -->
+      <div class="screen" id="screen-result">
+        <h1>The answer</h1>
+        <div class="card fade-in" style="margin-top:16px;">
+          <div class="loc-label">LOCATION</div>
+          <div class="loc-value" id="resLocation">&mdash;</div>
+          <div class="loc-label">THE SPY WAS</div>
+          <div class="role-value" id="resSpy" style="color:#e7a8a3;">&mdash;</div>
+        </div>
+        <button class="primary" id="resAgain" style="display:none;margin-top:20px;">PLAY AGAIN</button>
+        <div class="wait-note" id="resNote"></div>
+        <div class="err" id="resErr"></div>
+        <div class="link" id="resLeave">Leave lobby</div>
+      </div>
+
       <!-- SETUP SCREEN -->
-      <div class="screen active" id="screen-setup">
+      <div class="screen" id="screen-setup">
         <h1>The Dossier</h1>
         <p class="sub">A pass-the-phone deduction game. Everyone but one gets the same location and a role there. The spy gets nothing — and has to bluff their way through the questions.</p>
 
@@ -304,6 +476,7 @@
 
         <button class="primary" id="startBtn">BEGIN ASSIGNMENTS</button>
         <div class="link" id="viewLocsLink">View all possible locations</div>
+        <div class="link" id="setupBackLink">Back</div>
       </div>
 
       <!-- PASS SCREEN -->
@@ -329,6 +502,7 @@
         <div class="link" id="revealAnswerLink">Reveal the location &amp; spy</div>
         <button class="primary" id="newRoundBtn" style="margin-top:18px;">NEW ROUND, SAME PLAYERS</button>
         <div class="link" id="viewLocsLink2">View all possible locations</div>
+        <div class="link" id="playMenuLink">Back to menu</div>
       </div>
 
       <!-- ANSWER SCREEN -->
@@ -395,9 +569,222 @@
     $('locGrid').innerHTML = LOCATIONS.map(l=>`<div>${l.name}</div>`).join('');
   }
   renderLocGrid();
-  $('viewLocsLink').onclick = ()=> show('screen-locs');
-  $('viewLocsLink2').onclick = ()=> show('screen-locs');
-  $('closeLocsBtn').onclick = ()=> show('screen-setup');
+  let locsReturn = 'screen-home';
+  function openLocs(){
+    const cur = document.querySelector('.screen.active');
+    if(cur && cur.id !== 'screen-locs') locsReturn = cur.id;
+    show('screen-locs');
+  }
+  ['viewLocsLink','viewLocsLink2','viewLocsLink3','viewLocsLink4'].forEach(id=> $(id).onclick = openLocs);
+  $('closeLocsBtn').onclick = ()=> show(locsReturn);
+
+  // ---- home navigation ----
+  $('homePassBtn').onclick = ()=> show('screen-setup');
+  $('setupBackLink').onclick = ()=> show('screen-home');
+  $('playMenuLink').onclick = ()=> show('screen-home');
+  $('homeCreateBtn').onclick = ()=>{ $('createErr').textContent=''; show('screen-create'); $('createName').value = savedName(); };
+  $('homeJoinBtn').onclick = ()=>{ $('joinErr').textContent=''; show('screen-join'); $('joinName').value = savedName(); };
+  $('createBack').onclick = ()=> show('screen-home');
+  $('joinBack').onclick = ()=> show('screen-home');
+
+  // ---- online lobby ----
+  const SESSION_KEY = 'dossier-session';
+  const NAME_KEY = 'dossier-name';
+  let session = null;      // { code, pid }
+  let pollTimer = null;
+  let polling = false;
+  let lastState = null;
+  let cardHidden = false;
+  let lastRenderedRound = -1;
+
+  function savedName(){ try{ return localStorage.getItem(NAME_KEY) || ''; }catch(e){ return ''; } }
+  function saveName(n){ try{ localStorage.setItem(NAME_KEY, n); }catch(e){} }
+  function saveSession(){ try{ session ? localStorage.setItem(SESSION_KEY, JSON.stringify(session)) : localStorage.removeItem(SESSION_KEY); }catch(e){} }
+  function loadSession(){ try{ return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }catch(e){ return null; } }
+
+  async function api(path, body){
+    const opts = body === undefined ? {} : { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body) };
+    let res;
+    try{ res = await fetch(path, opts); }catch(e){ throw new Error('Network problem. Check your connection.'); }
+    let data = {};
+    try{ data = await res.json(); }catch(e){}
+    if(!res.ok){ const err = new Error(data.error || 'Something went wrong.'); err.status = res.status; throw err; }
+    return data;
+  }
+
+  function enterLobby(code, pid){
+    session = { code, pid };
+    saveSession();
+    lastState = null;
+    lastRenderedRound = -1;
+    startPolling();
+  }
+
+  function leaveLocal(msg){
+    stopPolling();
+    session = null;
+    lastState = null;
+    saveSession();
+    show('screen-home');
+    if(msg) alert(msg);
+  }
+
+  async function leaveLobby(){
+    const s = session;
+    leaveLocal();
+    if(s){ try{ await api('/api/leave', { code:s.code, playerId:s.pid }); }catch(e){} }
+  }
+
+  function startPolling(){
+    stopPolling();
+    poll();
+    pollTimer = setInterval(poll, 1500);
+  }
+  function stopPolling(){
+    if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+  }
+
+  async function poll(){
+    if(!session || polling) return;
+    polling = true;
+    const mine = session;
+    try{
+      const st = await api('/api/state?code=' + encodeURIComponent(mine.code) + '&pid=' + encodeURIComponent(mine.pid));
+      if(session !== mine) return;
+      render(st);
+    }catch(e){
+      if(session === mine && (e.status === 404 || e.status === 403)){
+        leaveLocal(e.status === 404 ? 'That lobby has closed.' : 'You were removed from the lobby.');
+      }
+      // other errors (network blips): keep polling
+    }finally{
+      polling = false;
+    }
+  }
+
+  function el(tag, text, cls){
+    const n = document.createElement(tag);
+    if(text !== undefined) n.textContent = text;
+    if(cls) n.className = cls;
+    return n;
+  }
+
+  function renderPlayers(ul, players){
+    ul.innerHTML = '';
+    players.forEach(p=>{
+      const li = el('li');
+      li.appendChild(el('span', p.name + (p.you ? ' (you)' : '')));
+      if(p.isHost) li.appendChild(el('span', 'HOST', 'badge'));
+      ul.appendChild(li);
+    });
+  }
+
+  function renderCard(st){
+    const wrap = $('gameCardWrap');
+    wrap.innerHTML = '';
+    if(cardHidden){
+      const c = el('div', 'TAP TO VIEW YOUR FILE', 'cover');
+      c.onclick = ()=>{ cardHidden = false; renderCard(st); };
+      wrap.appendChild(c);
+      $('gameNote').textContent = 'Only tap this when nobody else can see your screen.';
+      return;
+    }
+    $('gameNote').textContent = 'Tap the card to hide it before anyone sees your screen.';
+    const card = el('div', undefined, 'card tap-hide fade-in' + (st.me.spy ? ' spy' : ''));
+    if(st.me.spy){
+      card.appendChild(el('div', 'NO FILE FOUND', 'stamp-mark'));
+      card.appendChild(el('div', 'You are the SPY', 'spy-value'));
+      card.appendChild(el('div', "You don't know the location. Listen closely, ask vague questions, and try to figure it out before anyone figures out you.", 'spy-note'));
+    } else {
+      card.appendChild(el('div', 'LOCATION', 'loc-label'));
+      card.appendChild(el('div', st.me.location, 'loc-value'));
+      card.appendChild(el('div', 'YOUR ROLE', 'role-label'));
+      card.appendChild(el('div', st.me.role, 'role-value'));
+    }
+    card.onclick = ()=>{ cardHidden = true; renderCard(st); };
+    wrap.appendChild(card);
+  }
+
+  function render(st){
+    lastState = st;
+    if(st.phase === 'lobby'){
+      $('roomCode').textContent = st.code;
+      renderPlayers($('roomPlayers'), st.players);
+      const enough = st.players.length >= st.minPlayers;
+      $('roomStart').style.display = st.isHost ? 'block' : 'none';
+      $('roomStart').disabled = !enough;
+      $('roomNote').textContent = st.isHost
+        ? (enough ? st.players.length + ' players ready.' : 'Waiting for at least ' + st.minPlayers + ' players to join.')
+        : 'Waiting for the host to start the game.';
+      $('roomErr').textContent = '';
+      if(!$('screen-room').classList.contains('active')) show('screen-room');
+    } else if(st.phase === 'playing'){
+      if(st.round !== lastRenderedRound){
+        lastRenderedRound = st.round;
+        cardHidden = false;
+        renderCard(st);
+        $('gameRound').textContent = 'ROUND ' + st.round;
+      }
+      $('gameReveal').style.display = st.isHost ? 'block' : 'none';
+      $('gameErr').textContent = '';
+      if(!$('screen-game').classList.contains('active')) show('screen-game');
+    } else if(st.phase === 'revealed'){
+      $('resLocation').textContent = st.reveal.location;
+      $('resSpy').textContent = st.reveal.spyName;
+      $('resAgain').style.display = st.isHost ? 'block' : 'none';
+      $('resNote').textContent = st.isHost ? '' : 'Waiting for the host to start the next round.';
+      $('resErr').textContent = '';
+      if(!$('screen-result').classList.contains('active')) show('screen-result');
+    }
+  }
+
+  async function guarded(btn, errEl, fn){
+    btn.disabled = true;
+    errEl.textContent = '';
+    try{ await fn(); }catch(e){ errEl.textContent = e.message; }
+    finally{ btn.disabled = false; }
+  }
+
+  $('createGo').onclick = ()=> guarded($('createGo'), $('createErr'), async ()=>{
+    const name = $('createName').value.trim();
+    if(!name) throw new Error('Enter a name.');
+    saveName(name);
+    const r = await api('/api/create', { name });
+    enterLobby(r.code, r.playerId);
+  });
+
+  $('joinGo').onclick = ()=> guarded($('joinGo'), $('joinErr'), async ()=>{
+    const code = $('joinCode').value.trim().toUpperCase();
+    const name = $('joinName').value.trim();
+    if(code.length !== 4) throw new Error('Enter the 4-letter code.');
+    if(!name) throw new Error('Enter a name.');
+    saveName(name);
+    const r = await api('/api/join', { code, name });
+    enterLobby(r.code, r.playerId);
+  });
+  $('joinCode').addEventListener('input', e=>{ e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g,''); });
+
+  $('roomStart').onclick = ()=> guarded($('roomStart'), $('roomErr'), async ()=>{
+    await api('/api/start', { code:session.code, playerId:session.pid });
+    poll();
+  });
+  $('gameReveal').onclick = ()=> guarded($('gameReveal'), $('gameErr'), async ()=>{
+    await api('/api/reveal', { code:session.code, playerId:session.pid });
+    poll();
+  });
+  $('resAgain').onclick = ()=> guarded($('resAgain'), $('resErr'), async ()=>{
+    await api('/api/start', { code:session.code, playerId:session.pid });
+    poll();
+  });
+  ['roomLeave','gameLeave','resLeave'].forEach(id=> $(id).onclick = leaveLobby);
+
+  // resume after a refresh or app switch
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && session) poll(); });
+  const prev = loadSession();
+  if(prev && prev.code && prev.pid){
+    session = prev;
+    startPolling();
+  }
 
   // ---- start game: assign roles ----
   $('startBtn').onclick = function(){
