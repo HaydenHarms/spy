@@ -22,6 +22,23 @@ const MAX_PLAYERS = 12;
 const LOBBY_TTL_MS = 12 * 60 * 60 * 1000;
 const STALE_MS = 90 * 1000; // players not polling for this long are dropped while in the lobby phase
 
+const MAX_LOBBIES = 500;
+const LIMITS = { create: { max: 5, windowMs: 60 * 60 * 1000 }, join: { max: 40, windowMs: 10 * 60 * 1000 } };
+
+// Fixed-window per-IP counter kept in D1. Only used on create/join, so polling costs no extra writes.
+async function overLimit(db, kind, ip, now) {
+  const { max, windowMs } = LIMITS[kind];
+  const key = `${kind}:${ip}`;
+  const row = await db.prepare("SELECT count, window_start FROM rate_limits WHERE key = ?").bind(key).first();
+  if (!row || now - row.window_start >= windowMs) {
+    await db.prepare("INSERT INTO rate_limits (key, count, window_start) VALUES (?, 1, ?) ON CONFLICT(key) DO UPDATE SET count = 1, window_start = excluded.window_start").bind(key, now).run();
+    return false;
+  }
+  if (row.count >= max) return true;
+  await db.prepare("UPDATE rate_limits SET count = count + 1 WHERE key = ?").bind(key).run();
+  return false;
+}
+
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -75,6 +92,7 @@ async function housekeeping(db, now) {
   const cutoff = now - LOBBY_TTL_MS;
   await db.prepare("DELETE FROM players WHERE code IN (SELECT code FROM lobbies WHERE updated_at < ?)").bind(cutoff).run();
   await db.prepare("DELETE FROM lobbies WHERE updated_at < ?").bind(cutoff).run();
+  await db.prepare("DELETE FROM rate_limits WHERE window_start < ?").bind(now - 60 * 60 * 1000).run();
 }
 async function pruneStale(db, lobby, now) {
   if (lobby.phase !== "lobby") return;
@@ -138,13 +156,17 @@ export async function onRequest({ request, env }) {
   const url = new URL(request.url);
   const route = url.pathname.replace(/^\/api\/?/, "").replace(/\/$/, "");
   const now = Date.now();
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
 
   try {
     if (route === "create" && request.method === "POST") {
+      if (await overLimit(db, "create", ip, now)) return fail("Too many lobbies created. Try again later.", 429);
       const body = await readBody(request);
       const name = cleanName(body.name);
       if (!name) return fail("Enter a name.");
       await housekeeping(db, now);
+      const total = await db.prepare("SELECT COUNT(*) AS n FROM lobbies").first();
+      if (total && total.n >= MAX_LOBBIES) return fail("The server is busy. Try again later.", 503);
       let code = null;
       for (let i = 0; i < 20; i++) {
         const c = newCode();
@@ -160,6 +182,7 @@ export async function onRequest({ request, env }) {
     }
 
     if (route === "join" && request.method === "POST") {
+      if (await overLimit(db, "join", ip, now)) return fail("Too many attempts. Try again in a few minutes.", 429);
       const body = await readBody(request);
       const code = cleanCode(body.code);
       const name = cleanName(body.name);
