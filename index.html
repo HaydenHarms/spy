@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Spies</title>
-<meta name="description" content="Spies: a noir party game of bluffing and deduction. Everyone gets the same secret location, except the spy. Play online with a lobby code or pass one phone around.">
+<title>The Spy Game</title>
+<meta name="description" content="The Spy Game: a noir party game of bluffing and deduction. Everyone gets the same secret location, except the spy. Play online with a lobby code or pass one phone around.">
 <meta name="theme-color" content="#000000">
 <meta name="color-scheme" content="dark">
 <link rel="canonical" href="https://spy.haydenharms.com/">
@@ -14,19 +14,19 @@
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Spies">
+<meta name="apple-mobile-web-app-title" content="The Spy Game">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Spies">
-<meta property="og:title" content="Spies">
+<meta property="og:site_name" content="The Spy Game">
+<meta property="og:title" content="The Spy Game">
 <meta property="og:description" content="One of you is a spy. A noir party game of bluffing and deduction for 3 to 12 players.">
 <meta property="og:url" content="https://spy.haydenharms.com/">
 <meta property="og:image" content="https://spy.haydenharms.com/icons/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="A noir comic spy in a top hat and overcoat, with the word Spies">
+<meta property="og:image:alt" content="A noir comic spy in a fedora and trench coat, with the words The Spy Game">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Spies">
+<meta name="twitter:title" content="The Spy Game">
 <meta name="twitter:description" content="One of you is a spy. A noir party game of bluffing and deduction.">
 <meta name="twitter:image" content="https://spy.haydenharms.com/icons/og.png">
 <link rel="preload" href="/fonts/bangers.woff2" as="font" type="font/woff2" crossorigin>
@@ -198,7 +198,7 @@
   .emblem svg{position:absolute;left:50%;bottom:-8px;width:114px;transform:translateX(-50%);}
   .wordmark{
     font-family:var(--display);
-    font-size:78px;
+    font-size:62px;
     line-height:.9;
     letter-spacing:.05em;
     color:#000;
@@ -206,6 +206,7 @@
     font-weight:normal;
     text-shadow:4px 4px 0 var(--grey-light);
   }
+  .wordmark .the, .intro-title .the{display:block;font-size:.42em;letter-spacing:.3em;margin-bottom:.06em;}
   .tagline{font-family:var(--mono);font-size:12px;letter-spacing:.2em;color:var(--grey);margin-top:2px;}
 
   /* pass screen */
@@ -382,7 +383,9 @@
   .intro-title{
     position:absolute; left:50%; bottom:max(13%, 70px);
     font-family:var(--display);
-    font-size:min(24vmin, 130px);
+    font-size:min(16vmin, 96px);
+    white-space:nowrap;
+    text-align:center;
     letter-spacing:.06em;
     line-height:1;
     color:#fff;
@@ -400,7 +403,7 @@
     font-family:var(--mono); font-size:11px; letter-spacing:.24em; color:#888;
   }
   @media (min-aspect-ratio: 1/1){
-    .intro-title{bottom:5%; font-size:min(15vmin, 110px);}
+    .intro-title{bottom:7%; font-size:min(11vmin, 80px);}
   }
   @media (prefers-reduced-motion: reduce){
     .spot, .intro-title, .emblem::before{animation:none !important;}
@@ -518,7 +521,7 @@
     <use href="#spy" x="320" y="288" width="160" height="192"/>
   </svg>
   <div class="spot"></div>
-  <div class="intro-title">SPIES</div>
+  <div class="intro-title"><span class="the">THE</span>SPY GAME</div>
   <div class="intro-skip">TAP TO SKIP</div>
 </div>
 
@@ -531,7 +534,7 @@
       <div class="screen active" id="screen-home">
         <div class="masthead">
           <div class="emblem"><svg viewBox="0 0 200 240" aria-hidden="true"><use href="#spy"/></svg></div>
-          <h1 class="wordmark">SPIES</h1>
+          <h1 class="wordmark"><span class="the">THE</span>SPY GAME</h1>
           <div class="tagline">ONE OF YOU IS LYING</div>
         </div>
         <p class="sub">Everyone but one gets the same location and a role there. The spy gets nothing, and has to bluff their way through the questions.</p>

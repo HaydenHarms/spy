@@ -1,6 +1,6 @@
 {
-  "name": "Spies",
-  "short_name": "Spies",
+  "name": "The Spy Game",
+  "short_name": "The Spy Game",
   "description": "A noir party game of bluffing and deduction. Everyone gets the same secret location, except the spy.",
   "id": "/",
   "start_url": "/",

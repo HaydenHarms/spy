@@ -1,6 +1,6 @@
-// Spies service worker: makes the game installable and lets pass & play work offline.
+// The Spy Game service worker: makes the game installable and lets pass & play work offline.
 // Online lobbies (/api) always go straight to the network.
-const CACHE = 'spies-v6';
+const CACHE = 'spies-v7';
 const CORE = ['/', '/manifest.webmanifest', '/fonts/bangers.woff2', '/fonts/special-elite.woff2', '/icons/icon-192.png'];
 
 self.addEventListener('install', e => {
