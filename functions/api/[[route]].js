@@ -150,7 +150,11 @@ async function readBody(request) {
   try { return await request.json(); } catch { return {}; }
 }
 
+const ALLOWED_HOST = "spy.haydenharms.com";
+
 export async function onRequest({ request, env }) {
+  // Only serve the API on the custom domain, so the *.pages.dev addresses can't be used to burn through quota.
+  if (new URL(request.url).hostname !== ALLOWED_HOST) return fail("Not found.", 404);
   const db = env.DB;
   if (!db) return fail("Database not configured.", 500);
   const url = new URL(request.url);
