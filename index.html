@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>The Dossier — Pass &amp; Play</title>
+<style>
+  :root{
+    --ink:#12151b;
+    --panel:#1b2029;
+    --panel-raised:#232a35;
+    --paper:#e9e4d6;
+    --paper-dim:#a49d89;
+    --manila:#c9a86a;
+    --stamp:#a4342f;
+    --stamp-dim:#7c2b28;
+    --line:#3a4150;
+    --mono: 'Courier New', Courier, monospace;
+    --serif: Georgia, 'Times New Roman', serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at 50% -10%, #232a35 0%, var(--ink) 60%);
+    color:var(--paper);
+    font-family:var(--serif);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .stage{
+    width:100%;
+    max-width:420px;
+  }
+  .folder{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:2px;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,0.6);
+    overflow:hidden;
+    position:relative;
+  }
+  .folder::before{
+    content:"";
+    position:absolute;
+    top:0;left:0;right:0;
+    height:6px;
+    background:linear-gradient(90deg, var(--manila), #8a6f3a);
+    opacity:0.6;
+  }
+  .tab{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    color:var(--manila);
+    padding:16px 22px 0;
+    display:flex;
+    justify-content:space-between;
+  }
+  .body{
+    padding:20px 22px 26px;
+  }
+  h1{
+    font-family:var(--serif);
+    font-size:28px;
+    font-weight:normal;
+    margin:6px 0 4px;
+    color:var(--paper);
+    line-height:1.15;
+  }
+  .sub{
+    color:var(--paper-dim);
+    font-size:14.5px;
+    line-height:1.5;
+    margin:0 0 22px;
+  }
+  .field{
+    margin-bottom:20px;
+  }
+  .field label{
+    display:block;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.1em;
+    color:var(--manila);
+    margin-bottom:10px;
+  }
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .stepper button{
+    width:44px;height:44px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--panel-raised);
+    color:var(--paper);
+    font-size:20px;
+    cursor:pointer;
+  }
+  .stepper button:active{background:#2b3341;}
+  .count{
+    font-family:var(--mono);
+    font-size:26px;
+    min-width:40px;
+    text-align:center;
+  }
+  .hint{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--paper-dim);
+    margin-top:8px;
+  }
+  .toggle-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 0;
+    border-top:1px solid var(--line);
+  }
+  .toggle-row:last-of-type{border-bottom:1px solid var(--line);margin-bottom:22px;}
+  .toggle-row span{font-size:14.5px;}
+  .switch{
+    width:46px;height:26px;
+    border-radius:14px;
+    background:#2b3341;
+    border:1px solid var(--line);
+    position:relative;
+    cursor:pointer;
+    flex:none;
+  }
+  .switch.on{background:var(--stamp-dim);}
+  .switch::after{
+    content:"";
+    position:absolute;
+    top:2px;left:2px;
+    width:20px;height:20px;
+    border-radius:50%;
+    background:var(--paper);
+    transition:left .15s ease;
+  }
+  .switch.on::after{left:22px;}
+  button.primary{
+    width:100%;
+    padding:16px;
+    background:var(--stamp);
+    color:#f4ede0;
+    border:none;
+    border-radius:3px;
+    font-family:var(--mono);
+    font-size:14px;
+    letter-spacing:.12em;
+    cursor:pointer;
+    transition:transform .05s ease, background .15s ease;
+  }
+  button.primary:active{transform:scale(0.98); background:var(--stamp-dim);}
+  button.primary:disabled{opacity:0.35;cursor:default;}
+  button.ghost{
+    width:100%;
+    padding:14px;
+    background:transparent;
+    color:var(--paper-dim);
+    border:1px solid var(--line);
+    border-radius:3px;
+    font-family:var(--mono);
+    font-size:12.5px;
+    letter-spacing:.1em;
+    cursor:pointer;
+    margin-top:10px;
+  }
+  .center{text-align:center;}
+
+  /* pass screen */
+  .pass-num{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--manila);
+    letter-spacing:.16em;
+    text-align:center;
+  }
+  .pass-name{
+    font-size:42px;
+    text-align:center;
+    margin:10px 0 30px;
+    color:var(--paper);
+  }
+  .eye{
+    display:flex;
+    justify-content:center;
+    margin-bottom:26px;
+  }
+  .eye svg{width:54px;height:54px;stroke:var(--paper-dim);}
+
+  /* card reveal */
+  .card{
+    background:var(--panel-raised);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:26px 20px;
+    text-align:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .card.spy{
+    border-color:var(--stamp-dim);
+  }
+  .stamp-mark{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    color:var(--stamp);
+    border:2px solid var(--stamp);
+    padding:4px 10px;
+    border-radius:2px;
+    transform:rotate(-4deg);
+    margin-bottom:16px;
+  }
+  .loc-label, .role-label{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    color:var(--paper-dim);
+    margin-bottom:6px;
+  }
+  .loc-value{
+    font-size:30px;
+    color:var(--paper);
+    margin-bottom:20px;
+    line-height:1.2;
+  }
+  .role-value{
+    font-size:20px;
+    color:var(--manila);
+  }
+  .spy-value{
+    font-size:26px;
+    color:#e7a8a3;
+    margin-bottom:14px;
+  }
+  .spy-note{
+    font-size:14px;
+    color:var(--paper-dim);
+    line-height:1.5;
+  }
+
+  .loc-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:4px;
+  }
+  .loc-grid div{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--paper-dim);
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:8px 6px;
+    text-align:center;
+  }
+  .link{
+    text-align:center;
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--manila);
+    letter-spacing:.08em;
+    cursor:pointer;
+    margin-top:16px;
+    text-decoration:underline;
+  }
+  .screen{display:none;}
+  .screen.active{display:block;}
+  .fade-in{animation:fadeIn .25s ease;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="folder">
+    <div class="tab"><span>CLASSIFIED</span><span id="tabRight">FILE NO. 12-A</span></div>
+    <div class="body">
+
+      <!-- SETUP SCREEN -->
+      <div class="screen active" id="screen-setup">
+        <h1>The Dossier</h1>
+        <p class="sub">A pass-the-phone deduction game. Everyone but one gets the same location and a role there. The spy gets nothing — and has to bluff their way through the questions.</p>
+
+        <div class="field">
+          <label>NUMBER OF AGENTS</label>
+          <div class="stepper">
+            <button id="minus">–</button>
+            <div class="count" id="playerCount">6</div>
+            <button id="plus">+</button>
+          </div>
+          <div class="hint">3–10 players, one phone, everyone in the room</div>
+        </div>
+
+        <button class="primary" id="startBtn">BEGIN ASSIGNMENTS</button>
+        <div class="link" id="viewLocsLink">View all possible locations</div>
+      </div>
+
+      <!-- PASS SCREEN -->
+      <div class="screen" id="screen-pass">
+        <div class="pass-num">PASS THE PHONE TO</div>
+        <div class="pass-name" id="passPlayerName">Player 1</div>
+        <div class="eye">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <button class="primary" id="revealBtn">TAP TO VIEW YOUR FILE</button>
+      </div>
+
+      <!-- CARD SCREEN -->
+      <div class="screen" id="screen-card">
+        <div id="cardWrap"></div>
+        <button class="primary" id="passOnBtn" style="margin-top:20px;">GOT IT — PASS THE PHONE</button>
+      </div>
+
+      <!-- ALL DONE / TIMER SCREEN -->
+      <div class="screen" id="screen-play">
+        <h1 id="playHeading">Everyone's briefed</h1>
+        <p class="sub">Pass the phone back to the table. Ask each other questions about the location — the spy is listening for details they don't know, and trying not to give themselves away.</p>
+        <div class="link" id="revealAnswerLink">Reveal the location &amp; spy</div>
+        <button class="primary" id="newRoundBtn" style="margin-top:18px;">NEW ROUND, SAME PLAYERS</button>
+        <div class="link" id="viewLocsLink2">View all possible locations</div>
+      </div>
+
+      <!-- ANSWER SCREEN -->
+      <div class="screen" id="screen-answer">
+        <h1>The answer</h1>
+        <div class="card fade-in" style="margin-top:16px;">
+          <div class="loc-label">LOCATION</div>
+          <div class="loc-value" id="answerLocation">—</div>
+          <div class="loc-label">THE SPY WAS</div>
+          <div class="role-value" id="answerSpy" style="color:#e7a8a3;">—</div>
+        </div>
+        <button class="primary" id="backToPlayBtn" style="margin-top:20px;">BACK</button>
+      </div>
+
+      <!-- LOCATIONS LIST SCREEN -->
+      <div class="screen" id="screen-locs">
+        <h1>Possible locations</h1>
+        <p class="sub">Every round draws from this list of twelve. Anyone can check this at any time — knowing the list is part of the game.</p>
+        <div class="loc-grid" id="locGrid"></div>
+        <button class="primary" id="closeLocsBtn" style="margin-top:20px;">CLOSE</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+  const LOCATIONS = [
+    { name: "Airplane", roles: ["Pilot","Co-Pilot","Flight Attendant","Air Marshal","First Class Passenger","Economy Passenger","Mechanic","Child Traveling Alone"] },
+    { name: "Bank", roles: ["Teller","Bank Manager","Security Guard","Robber","Loan Officer","Customer","Armored Car Driver","Auditor"] },
+    { name: "Beach", roles: ["Lifeguard","Surfer","Ice Cream Vendor","Sunbather","Photographer","Volleyball Player","Fisherman","Tourist"] },
+    { name: "Casino", roles: ["Card Dealer","Bouncer","High Roller","Cocktail Waitress","Pit Boss","Card Counter","Slot Regular","Security Operator"] },
+    { name: "Circus", roles: ["Ringmaster","Clown","Trapeze Artist","Lion Tamer","Ticket Seller","Fortune Teller","Strongman","Concession Vendor"] },
+    { name: "Corporate Office", roles: ["CEO","Intern","IT Support","HR Manager","Accountant","Receptionist","Janitor","Salesperson"] },
+    { name: "Cruise Ship", roles: ["Captain","Bartender","Cruise Director","Passenger","Chef","Deckhand","Onboard Magician","Ship Doctor"] },
+    { name: "Hospital", roles: ["Surgeon","Nurse","Patient","Anesthesiologist","Receptionist","Paramedic","Visitor","Janitor"] },
+    { name: "Hotel", roles: ["Concierge","Bellhop","Housekeeper","Guest","Manager","Chef","Doorman","Valet"] },
+    { name: "Movie Studio", roles: ["Director","Lead Actor","Stunt Double","Camera Operator","Screenwriter","Makeup Artist","Producer","Background Extra"] },
+    { name: "Pirate Ship", roles: ["Captain","First Mate","Cabin Boy","Cook","Navigator","Lookout","Prisoner","Gunner"] },
+    { name: "School", roles: ["Principal","Teacher","Student","Janitor","Librarian","Coach","Lunch Lady","Substitute Teacher"] }
+  ];
+
+  let state = {
+    playerCount: 6,
+    currentIndex: 0,
+    assignments: [],
+    spyIndex: -1,
+    location: null
+  };
+
+  const $ = id => document.getElementById(id);
+  function show(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    $(id).classList.add('active');
+  }
+
+  // ---- setup controls ----
+  $('minus').onclick = ()=>{ state.playerCount = Math.max(3, state.playerCount-1); $('playerCount').textContent = state.playerCount; };
+  $('plus').onclick  = ()=>{ state.playerCount = Math.min(10, state.playerCount+1); $('playerCount').textContent = state.playerCount; };
+
+  function renderLocGrid(){
+    $('locGrid').innerHTML = LOCATIONS.map(l=>`<div>${l.name}</div>`).join('');
+  }
+  renderLocGrid();
+  $('viewLocsLink').onclick = ()=> show('screen-locs');
+  $('viewLocsLink2').onclick = ()=> show('screen-locs');
+  $('closeLocsBtn').onclick = ()=> show('screen-setup');
+
+  // ---- start game: assign roles ----
+  $('startBtn').onclick = function(){
+    const n = state.playerCount;
+    const loc = LOCATIONS[Math.floor(Math.random()*LOCATIONS.length)];
+    const shuffledRoles = [...loc.roles].sort(()=>Math.random()-0.5);
+    const spyIndex = Math.floor(Math.random()*n);
+
+    let roleCursor = 0;
+    const assignments = [];
+    for(let i=0;i<n;i++){
+      if(i === spyIndex){
+        assignments.push({ spy:true });
+      } else {
+        assignments.push({ spy:false, role: shuffledRoles[roleCursor % shuffledRoles.length] });
+        roleCursor++;
+      }
+    }
+
+    state.location = loc;
+    state.assignments = assignments;
+    state.spyIndex = spyIndex;
+    state.currentIndex = 0;
+
+    goToPass();
+  };
+
+  function goToPass(){
+    $('passPlayerName').textContent = 'Player ' + (state.currentIndex+1);
+    show('screen-pass');
+  }
+
+  $('revealBtn').onclick = function(){
+    const a = state.assignments[state.currentIndex];
+    let html = '';
+    if(a.spy){
+      html = `
+        <div class="card spy fade-in">
+          <div class="stamp-mark">NO FILE FOUND</div>
+          <div class="spy-value">You are the SPY</div>
+          <div class="spy-note">You don't know the location. Listen closely, ask vague questions, and try to figure it out before anyone figures out you.</div>
+        </div>`;
+    } else {
+      html = `
+        <div class="card fade-in">
+          <div class="loc-label">LOCATION</div>
+          <div class="loc-value">${state.location.name}</div>
+          <div class="role-label">YOUR ROLE</div>
+          <div class="role-value">${a.role}</div>
+        </div>`;
+    }
+    $('cardWrap').innerHTML = html;
+    show('screen-card');
+  };
+
+  $('passOnBtn').onclick = function(){
+    state.currentIndex++;
+    if(state.currentIndex >= state.assignments.length){
+      startPlayScreen();
+    } else {
+      goToPass();
+    }
+  };
+
+  function startPlayScreen(){
+    $('playHeading').textContent = "Everyone's briefed";
+    show('screen-play');
+  }
+
+  // ---- reveal answer ----
+  $('revealAnswerLink').onclick = function(){
+    $('answerLocation').textContent = state.location.name;
+    $('answerSpy').textContent = 'Player ' + (state.spyIndex+1);
+    show('screen-answer');
+  };
+  $('backToPlayBtn').onclick = ()=> show('screen-play');
+
+  // ---- new round, same player count ----
+  $('newRoundBtn').onclick = function(){
+    $('startBtn').click();
+  };
+
+})();
+</script>
+
+</body>
+</html>
