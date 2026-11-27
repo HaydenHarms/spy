@@ -153,6 +153,7 @@ async function assignRound(db, lobby, now) {
   const list = PACKS[packOf(lobby.pack)];
   const loc = list[randInt(list.length)];
   const spy = players[randInt(players.length)];
+  const first = players[randInt(players.length)]; // anyone can open the questioning, the spy included
   const roles = shuffle(loc.roles);
   let cursor = 0;
   const stmts = [];
@@ -161,8 +162,8 @@ async function assignRound(db, lobby, now) {
     stmts.push(db.prepare("UPDATE players SET role = ? WHERE id = ?").bind(role, p.id));
   }
   stmts.push(
-    db.prepare("UPDATE lobbies SET phase = 'playing', location = ?, spy_id = ?, round = round + 1, updated_at = ? WHERE code = ?")
-      .bind(loc.name, spy.id, now, lobby.code)
+    db.prepare("UPDATE lobbies SET phase = 'playing', location = ?, spy_id = ?, first_id = ?, round = round + 1, updated_at = ? WHERE code = ?")
+      .bind(loc.name, spy.id, first.id, now, lobby.code)
   );
   await db.batch(stmts);
   return null;
@@ -248,9 +249,12 @@ export async function onRequest({ request, env }) {
         minPlayers: MIN_PLAYERS,
         players: players.map(p => ({ id: p.id, name: p.name, isHost: p.id === lobby.host_id, you: p.id === pid })),
         me: null,
-        reveal: null
+        reveal: null,
+        first: null
       };
       if (lobby.phase !== "lobby") {
+        const first = players.find(p => p.id === lobby.first_id);
+        if (first) out.first = { name: first.name, you: first.id === pid };
         out.me = lobby.spy_id === pid
           ? { spy: true }
           : { spy: false, location: lobby.location, role: me.role };

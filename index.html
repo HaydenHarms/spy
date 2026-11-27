@@ -280,6 +280,16 @@
   .pack-btn:disabled{cursor:default;}
   .pack-btn:disabled:not(.on){opacity:.4;}
   .pack-field{margin:18px 0 18px;}
+  .first-up{
+    margin:12px auto 4px;
+    text-align:center;
+    background:#000;color:#fff;
+    font-family:var(--display);font-size:22px;letter-spacing:.05em;line-height:1.1;
+    padding:9px 12px 6px;
+    transform:rotate(-1.5deg);
+    box-shadow:4px 4px 0 var(--grey-light);
+  }
+  .first-up small{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:#ccc;margin-bottom:3px;}
   .loc-group{font-family:var(--display);font-size:22px;letter-spacing:.05em;margin:18px 0 8px;}
   .loc-group:first-child{margin-top:0;}
   .link{
@@ -609,6 +619,7 @@
       <!-- ONLINE GAME -->
       <div class="screen" id="screen-game">
         <div class="room-label" id="gameRound">ROUND</div>
+        <div class="first-up" id="gameFirst" style="display:none;"></div>
         <div id="gameCardWrap" style="margin-top:14px;"></div>
         <div class="wait-note" id="gameNote">Tap the card to hide it before anyone sees your screen.</div>
         <div class="center"><button class="small-btn" id="gameReveal" style="display:none;">Reveal location &amp; spy</button></div>
@@ -680,6 +691,7 @@
       <!-- ALL DONE / TIMER SCREEN -->
       <div class="screen" id="screen-play">
         <h1 id="playHeading">Everyone's briefed</h1>
+        <div class="first-up" id="playFirst"></div>
         <p class="sub">Pass the phone back to the table. Ask each other questions about the location — the spy is listening for details they don't know, and trying not to give themselves away.</p>
         <div class="link" id="revealAnswerLink">Reveal the location &amp; spy</div>
         <button class="primary" id="newRoundBtn" style="margin-top:18px;">NEW ROUND, SAME PLAYERS</button>
@@ -990,6 +1002,13 @@
         renderCard(st);
         $('gameRound').textContent = 'ROUND ' + st.round;
       }
+      const fu = $('gameFirst');
+      if(st.first){
+        fu.innerHTML = '';
+        fu.appendChild(el('small', 'FIRST QUESTION'));
+        fu.appendChild(document.createTextNode(st.first.you ? 'You go first!' : st.first.name + ' goes first'));
+        fu.style.display = 'block';
+      } else fu.style.display = 'none';
       $('gameReveal').style.display = st.isHost ? 'inline-block' : 'none';
       $('gameErr').textContent = '';
       goTo('screen-game');
@@ -1085,6 +1104,7 @@
     state.assignments = assignments;
     state.spyIndex = spyIndex;
     state.currentIndex = 0;
+    state.firstIndex = Math.floor(Math.random()*n);
 
     goToPass();
   };
@@ -1128,6 +1148,10 @@
 
   function startPlayScreen(){
     $('playHeading').textContent = "Everyone's briefed";
+    const fu = $('playFirst');
+    fu.innerHTML = '';
+    fu.appendChild(el('small', 'FIRST QUESTION'));
+    fu.appendChild(document.createTextNode('Player ' + (state.firstIndex+1) + ' goes first'));
     show('screen-play');
   }
 
