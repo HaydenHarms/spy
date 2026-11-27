@@ -465,17 +465,19 @@
   .help-body{overflow-y:auto; padding:18px 20px 22px; -webkit-overflow-scrolling:touch;}
   .help-body h2{font-family:var(--display); font-size:34px; margin:0 0 4px; letter-spacing:.02em;}
   .help-lede{margin:0; font-size:14px; letter-spacing:.04em;}
-  .faq{border-top:3px solid #000; margin-top:14px;}
-  .faq details{border-bottom:2px solid #000;}
-  .faq summary{
-    list-style:none; cursor:pointer; padding:13px 30px 13px 0; position:relative;
-    font-family:var(--display); font-size:20px; letter-spacing:.03em; line-height:1.15;
+  .q-deal{
+    border:3px solid #000; box-shadow:6px 6px 0 #000; background:#fff;
+    padding:22px 18px 18px; margin:16px 0 8px; text-align:center; position:relative;
   }
-  .faq summary::-webkit-details-marker{display:none;}
-  .faq summary::after{content:"+"; position:absolute; right:2px; top:9px; font-size:26px;}
-  .faq details[open] summary::after{content:"\2013";}
-  .faq summary:focus-visible{outline:3px solid #000; outline-offset:2px;}
-  .faq p{margin:0 0 14px; font-size:15px; line-height:1.5;}
+  .q-deal .loc-label{margin-bottom:10px;}
+  .q-text{font-family:var(--display); font-size:26px; line-height:1.12; letter-spacing:.02em; min-height:3.4em; display:flex; align-items:center; justify-content:center;}
+  .q-text.fade-in{animation:pop .28s cubic-bezier(.2,1.6,.4,1);}
+  .q-deal button.primary{margin-top:14px;}
+  .q-group{margin-top:20px;}
+  .q-group h3{font-family:var(--mono); font-size:11px; letter-spacing:.22em; margin:0 0 6px; padding-bottom:6px; border-bottom:3px solid #000;}
+  .q-group ul{list-style:none; margin:0; padding:0;}
+  .q-group li{padding:10px 0; border-bottom:1px solid #000; font-size:15px; line-height:1.4;}
+  .q-tip{font-size:13px; line-height:1.5; margin:18px 0 0; padding:12px 14px; background:#000; color:#fff;}
   /* blood splatter on reveal */
   .splat{
     position:absolute; z-index:5; pointer-events:none;
@@ -610,28 +612,23 @@
   <div class="intro-skip">TAP TO SKIP</div>
 </div>
 
-<button class="help-fab" id="helpBtn" type="button" aria-label="Help" aria-haspopup="dialog" aria-controls="helpOverlay">?</button>
+<button class="help-fab" id="helpBtn" type="button" aria-label="Question ideas" aria-haspopup="dialog" aria-controls="helpOverlay">?</button>
 <div class="help-overlay" id="helpOverlay" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
   <div class="folder help-sheet">
-    <div class="tab"><span>FIELD MANUAL</span><button class="help-close" id="helpClose" type="button">CLOSE &times;</button></div>
+    <div class="tab"><span>INTERROGATION</span><button class="help-close" id="helpClose" type="button">CLOSE &times;</button></div>
     <div class="help-body">
-      <h2 id="helpTitle">Need a hand?</h2>
-      <p class="help-lede">Common questions, answered.</p>
-      <div class="faq">
-        <details><summary>What's the point of the game?</summary><p>Everyone gets the same secret location except one player: the spy. Players ask each other questions to work out who doesn't know where they are. The spy tries to blend in and figure out the location before getting caught.</p></details>
-        <details><summary>How do I know if I'm the spy?</summary><p>Your card says “You are the SPY” in white on black, with no location. Everyone else sees the location and a role there. Keep your card hidden from the other players.</p></details>
-        <details><summary>Who asks the first question?</summary><p>The game picks someone at random each round and shows it on the card screen. After that, whoever answers asks the next question to anyone they like, but not straight back to the person who just asked them.</p></details>
-        <details><summary>What kind of questions should I ask?</summary><p>Ask questions that prove you know the location without giving it away, like “What would you wear here?” or “How did you get here today?” Too vague and you look like the spy. Too specific and the spy figures out where you are.</p></details>
-        <details><summary>How does a round end?</summary><p>Any player can call a vote when they think they've found the spy. If everyone agrees, that player is accused. Catch the spy and everyone else wins. Accuse an innocent player and the spy wins. The spy can also stop the game at any time and guess the location; a right guess wins it for the spy.</p></details>
-        <details><summary>How long should a round be?</summary><p>Around 6 to 8 minutes works well. If time runs out, everyone votes on who they think the spy is.</p></details>
-        <details><summary>How many people can play?</summary><p>At least 3. Online lobbies hold up to 12 players. Pass & play goes up to 10 on one phone.</p></details>
-        <details><summary>How do I play with friends online?</summary><p>One person taps “Create a lobby” and shares the 4-letter room code. Everyone else taps “Join with a code” and enters it. When everyone is in, the host starts the round, and each person sees their own card on their own phone.</p></details>
-        <details><summary>What's pass & play?</summary><p>One phone for the whole group. Choose the number of players, then pass the phone around. Each person taps to see their card, then hides it before passing it on.</p></details>
-        <details><summary>What are location packs?</summary><p>The host picks which locations the round can draw from: Classic, Adventure (ski resort, zoo, Titanic and more) or Everything. Tap “View all possible locations” to see the full list, which is handy for the spy.</p></details>
-        <details><summary>Who can start rounds and reveal the answer?</summary><p>Only the host, the person who created the lobby. If the host leaves, the next player in the lobby takes over as host.</p></details>
-        <details><summary>What if I close the app or lose signal?</summary><p>Just reopen the page. Your phone remembers which lobby you were in and puts you back in. If you're gone for more than a minute or two while waiting in the lobby, you may be dropped and need to rejoin with the code.</p></details>
-        <details><summary>Can I put this on my home screen?</summary><p>Yes. On iPhone, tap Share, then “Add to Home Screen.” On Android, open the browser menu and tap “Add to Home screen” or “Install app.” It then opens full screen like an app.</p></details>
+      <h2 id="helpTitle">Stuck for a question?</h2>
+      <p class="help-lede">Ask one of these to the player of your choice.</p>
+      <div class="q-deal">
+        <div class="loc-label">TRY ASKING</div>
+        <div class="q-text" id="qText" aria-live="polite">&nbsp;</div>
+        <button class="primary" id="qNext" type="button">ANOTHER ONE</button>
       </div>
+      <div class="q-group"><h3>YOUR ROLE</h3><ul><li>What would you wear to work in your role?</li><li>How long have you been doing your job here?</li><li>What's the most annoying part of your job?</li><li>Who's your boss here?</li><li>What tools do you use every day?</li><li>Do you like the people you work with?</li><li>What did you have to learn to get this job?</li><li>How much do you get paid, roughly?</li></ul></div>
+      <div class="q-group"><h3>THE PLACE</h3><ul><li>How did you get here today?</li><li>What's the weather like where we are?</li><li>Is it loud here or quiet?</li><li>What does it smell like here?</li><li>Would you bring your kids here?</li><li>How long do people usually stay here?</li><li>Is this place busier during the day or at night?</li><li>Would you need a ticket to get in?</li><li>Are there any animals around?</li><li>Is it indoors or outdoors?</li></ul></div>
+      <div class="q-group"><h3>PEOPLE &amp; EVENTS</h3><ul><li>Who's the most important person here?</li><li>What would get someone kicked out of here?</li><li>What's the worst thing that could happen here?</li><li>What would you eat for lunch here?</li><li>What would you post on social media from here?</li><li>What do people usually complain about here?</li><li>What's something you'd never say out loud here?</li><li>If you had a day off, would you still come here?</li></ul></div>
+      <div class="q-group"><h3>SNEAKY ONES</h3><ul><li>Describe this place in one word.</li><li>What would you bring if you came here again?</li><li>Is this a place you'd want to be stuck in?</li><li>What color is everything around here?</li><li>What's the first thing you notice when you walk in?</li><li>What would a movie about this place be called?</li></ul></div>
+      <p class="q-tip">Not the spy? Keep answers vague enough that the spy can't guess the place. The spy? Answer like you know exactly where you are.</p>
     </div>
   </div>
 </div>
@@ -1226,7 +1223,16 @@
   // ---- help sheet ----
   (function(){
     const btn = $('helpBtn'), ov = $('helpOverlay');
-    const open = ()=>{ ov.classList.add('open'); $('helpClose').focus(); };
+    const qs = Array.from(ov.querySelectorAll('.q-group li')).map(li=>li.textContent);
+    let bag = [], last = '';
+    const deal = ()=>{
+      if(!bag.length) bag = qs.filter(q=>q!==last).sort(()=>Math.random()-.5);
+      last = bag.pop();
+      const t = $('qText'); t.textContent = last;
+      t.classList.remove('fade-in'); void t.offsetWidth; t.classList.add('fade-in');
+    };
+    $('qNext').onclick = deal;
+    const open = ()=>{ deal(); ov.classList.add('open'); $('helpClose').focus(); };
     const close = ()=>{ ov.classList.remove('open'); btn.focus(); };
     btn.onclick = open;
     $('helpClose').onclick = close;
