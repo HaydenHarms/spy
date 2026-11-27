@@ -59,7 +59,7 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+    padding:max(24px, env(safe-area-inset-top)) 16px max(84px, calc(env(safe-area-inset-bottom) + 68px));
   }
   body::before{
     content:"";
@@ -432,6 +432,50 @@
   @media (min-aspect-ratio: 1/1){
     .intro-title{bottom:7%; font-size:min(11vmin, 80px);}
   }
+  /* help button + sheet */
+  .help-fab{
+    position:fixed; z-index:50;
+    right:max(16px, env(safe-area-inset-right)); bottom:max(16px, env(safe-area-inset-bottom));
+    width:52px; height:52px; border-radius:50%;
+    background:var(--white); color:#000; border:3px solid #000;
+    box-shadow:0 0 0 3px var(--white), 4px 4px 0 3px rgba(255,255,255,.25);
+    font-family:var(--display); font-size:30px; line-height:1; padding:0; margin:0;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+  }
+  .help-fab:active{transform:translate(2px,2px);}
+  .help-fab:focus-visible{outline:3px solid #fff; outline-offset:4px;}
+  .help-overlay{
+    position:fixed; inset:0; z-index:60; display:none;
+    background:rgba(0,0,0,.78);
+    align-items:flex-end; justify-content:center;
+    padding:16px max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  }
+  .help-overlay.open{display:flex;}
+  @media (min-height:600px){ .help-overlay{align-items:center;} }
+  .help-sheet{
+    width:100%; max-width:420px; max-height:min(86vh, 720px);
+    display:flex; flex-direction:column;
+    animation:pop .28s cubic-bezier(.2,1.6,.4,1);
+  }
+  .help-sheet .tab{flex:none;}
+  .help-close{
+    background:none; border:0; color:#fff; padding:0 2px; margin:0; width:auto;
+    font-family:var(--mono); font-size:11px; letter-spacing:.22em; cursor:pointer; box-shadow:none;
+  }
+  .help-body{overflow-y:auto; padding:18px 20px 22px; -webkit-overflow-scrolling:touch;}
+  .help-body h2{font-family:var(--display); font-size:34px; margin:0 0 4px; letter-spacing:.02em;}
+  .help-lede{margin:0; font-size:14px; letter-spacing:.04em;}
+  .faq{border-top:3px solid #000; margin-top:14px;}
+  .faq details{border-bottom:2px solid #000;}
+  .faq summary{
+    list-style:none; cursor:pointer; padding:13px 30px 13px 0; position:relative;
+    font-family:var(--display); font-size:20px; letter-spacing:.03em; line-height:1.15;
+  }
+  .faq summary::-webkit-details-marker{display:none;}
+  .faq summary::after{content:"+"; position:absolute; right:2px; top:9px; font-size:26px;}
+  .faq details[open] summary::after{content:"\2013";}
+  .faq summary:focus-visible{outline:3px solid #000; outline-offset:2px;}
+  .faq p{margin:0 0 14px; font-size:15px; line-height:1.5;}
   /* blood splatter on reveal */
   .splat{
     position:absolute; z-index:5; pointer-events:none;
@@ -564,6 +608,32 @@
   <div class="spot"></div>
   <div class="intro-title"><span class="the">THE</span>SPY GAME</div>
   <div class="intro-skip">TAP TO SKIP</div>
+</div>
+
+<button class="help-fab" id="helpBtn" type="button" aria-label="Help" aria-haspopup="dialog" aria-controls="helpOverlay">?</button>
+<div class="help-overlay" id="helpOverlay" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="folder help-sheet">
+    <div class="tab"><span>FIELD MANUAL</span><button class="help-close" id="helpClose" type="button">CLOSE &times;</button></div>
+    <div class="help-body">
+      <h2 id="helpTitle">Need a hand?</h2>
+      <p class="help-lede">Common questions, answered.</p>
+      <div class="faq">
+        <details><summary>What's the point of the game?</summary><p>Everyone gets the same secret location except one player: the spy. Players ask each other questions to work out who doesn't know where they are. The spy tries to blend in and figure out the location before getting caught.</p></details>
+        <details><summary>How do I know if I'm the spy?</summary><p>Your card says “You are the SPY” in white on black, with no location. Everyone else sees the location and a role there. Keep your card hidden from the other players.</p></details>
+        <details><summary>Who asks the first question?</summary><p>The game picks someone at random each round and shows it on the card screen. After that, whoever answers asks the next question to anyone they like, but not straight back to the person who just asked them.</p></details>
+        <details><summary>What kind of questions should I ask?</summary><p>Ask questions that prove you know the location without giving it away, like “What would you wear here?” or “How did you get here today?” Too vague and you look like the spy. Too specific and the spy figures out where you are.</p></details>
+        <details><summary>How does a round end?</summary><p>Any player can call a vote when they think they've found the spy. If everyone agrees, that player is accused. Catch the spy and everyone else wins. Accuse an innocent player and the spy wins. The spy can also stop the game at any time and guess the location; a right guess wins it for the spy.</p></details>
+        <details><summary>How long should a round be?</summary><p>Around 6 to 8 minutes works well. If time runs out, everyone votes on who they think the spy is.</p></details>
+        <details><summary>How many people can play?</summary><p>At least 3. Online lobbies hold up to 12 players. Pass & play goes up to 10 on one phone.</p></details>
+        <details><summary>How do I play with friends online?</summary><p>One person taps “Create a lobby” and shares the 4-letter room code. Everyone else taps “Join with a code” and enters it. When everyone is in, the host starts the round, and each person sees their own card on their own phone.</p></details>
+        <details><summary>What's pass & play?</summary><p>One phone for the whole group. Choose the number of players, then pass the phone around. Each person taps to see their card, then hides it before passing it on.</p></details>
+        <details><summary>What are location packs?</summary><p>The host picks which locations the round can draw from: Classic, Adventure (ski resort, zoo, Titanic and more) or Everything. Tap “View all possible locations” to see the full list, which is handy for the spy.</p></details>
+        <details><summary>Who can start rounds and reveal the answer?</summary><p>Only the host, the person who created the lobby. If the host leaves, the next player in the lobby takes over as host.</p></details>
+        <details><summary>What if I close the app or lose signal?</summary><p>Just reopen the page. Your phone remembers which lobby you were in and puts you back in. If you're gone for more than a minute or two while waiting in the lobby, you may be dropped and need to rejoin with the code.</p></details>
+        <details><summary>Can I put this on my home screen?</summary><p>Yes. On iPhone, tap Share, then “Add to Home Screen.” On Android, open the browser menu and tap “Add to Home screen” or “Install app.” It then opens full screen like an app.</p></details>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="stage">
@@ -1152,6 +1222,17 @@
     poll();
   });
   ['roomLeave','gameLeave','resLeave'].forEach(id=> $(id).onclick = leaveLobby);
+
+  // ---- help sheet ----
+  (function(){
+    const btn = $('helpBtn'), ov = $('helpOverlay');
+    const open = ()=>{ ov.classList.add('open'); $('helpClose').focus(); };
+    const close = ()=>{ ov.classList.remove('open'); btn.focus(); };
+    btn.onclick = open;
+    $('helpClose').onclick = close;
+    ov.addEventListener('click', e=>{ if(e.target === ov) close(); });
+    document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && ov.classList.contains('open')) close(); });
+  })();
 
   // resume after a refresh or app switch
   document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && session) poll(); });
