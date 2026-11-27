@@ -26,7 +26,7 @@ const ADVENTURE = [
   { name: "State Park", roles: ["Park Ranger","Camper","Hiker","Fisherman","Birdwatcher","Scout Leader","Lost Tourist","Bear"] },
   { name: "University", roles: ["Professor","Freshman","Teaching Assistant","Dean","Campus Security","Frat Member","Librarian","Exhausted Grad Student"] },
   { name: "Titanic", roles: ["Captain","Lookout","Ship Engineer","First Class Passenger","Third Class Passenger","Band Member","Steward","Shipbuilder"] },
-  { name: "Pyramid", roles: ["Pharaoh","Archaeologist","Tomb Raider","Tour Guide","Mummy","Stone Worker","High Priest","Camel Driver"] }
+  { name: "Pyramid", roles: ["Pharaoh","Archaeologist","Tomb Raider","Tour Guide","Mummy","Stone Worker","Religious Zealot","Camel Driver"] }
 ];
 
 const PACKS = {
