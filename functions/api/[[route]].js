@@ -1,7 +1,7 @@
-// Lobby API for The Dossier. Cloudflare Pages Function backed by D1 (binding: DB).
+// Lobby API for The Spy Game. Cloudflare Pages Function backed by D1 (binding: DB).
 // Clients poll GET /api/state. Roles are only ever returned to the player they belong to.
 
-const LOCATIONS = [
+const CLASSIC = [
   { name: "Airplane", roles: ["Pilot","Co-Pilot","Flight Attendant","Air Marshal","First Class Passenger","Economy Passenger","Mechanic","Child Traveling Alone"] },
   { name: "Bank", roles: ["Teller","Bank Manager","Security Guard","Robber","Loan Officer","Customer","Armored Car Driver","Auditor"] },
   { name: "Beach", roles: ["Lifeguard","Surfer","Ice Cream Vendor","Sunbather","Photographer","Volleyball Player","Fisherman","Tourist"] },
@@ -15,6 +15,27 @@ const LOCATIONS = [
   { name: "Pirate Ship", roles: ["Captain","First Mate","Cabin Boy","Cook","Navigator","Lookout","Prisoner","Gunner"] },
   { name: "School", roles: ["Principal","Teacher","Student","Janitor","Librarian","Coach","Lunch Lady","Substitute Teacher"] }
 ];
+
+const ADVENTURE = [
+  { name: "Ski Resort", roles: ["Ski Instructor","Snowboarder","Ski Patrol","Lift Operator","Beginner Skier","Lodge Bartender","Snowplow Driver","Injured Skier"] },
+  { name: "Zoo", roles: ["Zookeeper","Veterinarian","Tour Guide","Kid on a Field Trip","Popcorn Vendor","Lion","Penguin","Escaped Monkey"] },
+  { name: "Football Stadium", roles: ["Quarterback","Referee","Head Coach","Cheerleader","Team Mascot","Hot Dog Vendor","Fan in Face Paint","Announcer"] },
+  { name: "Arcade", roles: ["Arcade Owner","High Score Champion","Prize Counter Clerk","Kid with a Bucket of Tokens","Birthday Party Guest","Repair Technician","Claw Machine Addict","Bored Parent"] },
+  { name: "F1 Race", roles: ["Driver","Pit Crew Mechanic","Team Principal","Race Engineer","Commentator","Flag Marshal","Safety Car Driver","Fan in the Grandstand"] },
+  { name: "Olympics", roles: ["Gold Medalist","Sprinter","Gymnast","Judge","Coach","Torch Bearer","Drug Tester","Spectator"] },
+  { name: "State Park", roles: ["Park Ranger","Camper","Hiker","Fisherman","Birdwatcher","Scout Leader","Lost Tourist","Bear"] },
+  { name: "University", roles: ["Professor","Freshman","Teaching Assistant","Dean","Campus Security","Frat Member","Librarian","Exhausted Grad Student"] },
+  { name: "Titanic", roles: ["Captain","Lookout","Ship Engineer","First Class Passenger","Third Class Passenger","Band Member","Steward","Shipbuilder"] },
+  { name: "Pyramid", roles: ["Pharaoh","Archaeologist","Tomb Raider","Tour Guide","Mummy","Stone Worker","High Priest","Camel Driver"] }
+];
+
+const PACKS = {
+  classic: CLASSIC,
+  adventure: ADVENTURE,
+  everything: CLASSIC.concat(ADVENTURE)
+};
+const DEFAULT_PACK = "classic";
+const packOf = id => (Object.prototype.hasOwnProperty.call(PACKS, id) ? id : DEFAULT_PACK);
 
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // no I or O
 const MIN_PLAYERS = 3;
@@ -129,7 +150,8 @@ async function requirePlayer(db, code, pid) {
 async function assignRound(db, lobby, now) {
   const players = await getPlayers(db, lobby.code);
   if (players.length < MIN_PLAYERS) return fail(`Need at least ${MIN_PLAYERS} players.`);
-  const loc = LOCATIONS[randInt(LOCATIONS.length)];
+  const list = PACKS[packOf(lobby.pack)];
+  const loc = list[randInt(list.length)];
   const spy = players[randInt(players.length)];
   const roles = shuffle(loc.roles);
   let cursor = 0;
@@ -221,6 +243,7 @@ export async function onRequest({ request, env }) {
         code,
         phase: lobby.phase,
         round: lobby.round,
+        pack: packOf(lobby.pack),
         isHost: lobby.host_id === pid,
         minPlayers: MIN_PLAYERS,
         players: players.map(p => ({ id: p.id, name: p.name, isHost: p.id === lobby.host_id, you: p.id === pid })),
@@ -239,7 +262,7 @@ export async function onRequest({ request, env }) {
       return json(out);
     }
 
-    if (route === "start" || route === "reveal" || route === "lobby") {
+    if (route === "start" || route === "reveal" || route === "lobby" || route === "pack") {
       if (request.method !== "POST") return fail("Method not allowed.", 405);
       const body = await readBody(request);
       const code = cleanCode(body.code);
@@ -247,6 +270,13 @@ export async function onRequest({ request, env }) {
       if (err) return err;
       if (lobby.host_id !== body.playerId) return fail("Only the host can do that.", 403);
 
+      if (route === "pack") {
+        const pack = String(body.pack || "");
+        if (!Object.prototype.hasOwnProperty.call(PACKS, pack)) return fail("Unknown location pack.");
+        if (lobby.phase === "playing") return fail("Change the pack between rounds.", 409);
+        await db.prepare("UPDATE lobbies SET pack = ?, updated_at = ? WHERE code = ?").bind(pack, now, code).run();
+        return json({ ok: true });
+      }
       if (route === "start") {
         const e = await assignRound(db, lobby, now);
         if (e) return e;

@@ -265,6 +265,23 @@
     padding:9px 6px;
     text-align:center;
   }
+  .packs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .pack-btn{
+    padding:10px 4px 8px;
+    background:#fff;color:#000;
+    border:2px solid #000;
+    box-shadow:3px 3px 0 #000;
+    font-family:var(--display);font-size:18px;letter-spacing:.05em;line-height:1;
+    cursor:pointer;
+  }
+  .pack-btn small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;margin-top:4px;color:var(--grey);}
+  .pack-btn.on{background:#000;color:#fff;box-shadow:3px 3px 0 var(--grey-light);}
+  .pack-btn.on small{color:#ccc;}
+  .pack-btn:disabled{cursor:default;}
+  .pack-btn:disabled:not(.on){opacity:.4;}
+  .pack-field{margin:18px 0 18px;}
+  .loc-group{font-family:var(--display);font-size:22px;letter-spacing:.05em;margin:18px 0 8px;}
+  .loc-group:first-child{margin-top:0;}
   .link{
     text-align:center;
     font-family:var(--mono);
@@ -579,6 +596,10 @@
         <div class="room-label">LOBBY CODE</div>
         <div class="room-code" id="roomCode">----</div>
         <ul class="plist" id="roomPlayers"></ul>
+        <div class="field pack-field">
+          <label>LOCATION PACK</label>
+          <div class="packs" id="roomPacks"></div>
+        </div>
         <button class="primary" id="roomStart" style="display:none;">START GAME</button>
         <div class="wait-note" id="roomNote"></div>
         <div class="err" id="roomErr"></div>
@@ -605,6 +626,10 @@
           <div class="loc-label">THE SPY WAS</div>
           <div class="role-value spy-name" id="resSpy">&mdash;</div>
         </div>
+        <div class="field pack-field" id="resPackField" style="display:none;">
+          <label>NEXT ROUND'S LOCATION PACK</label>
+          <div class="packs" id="resPacks"></div>
+        </div>
         <button class="primary" id="resAgain" style="display:none;margin-top:20px;">PLAY AGAIN</button>
         <div class="wait-note" id="resNote"></div>
         <div class="err" id="resErr"></div>
@@ -624,6 +649,11 @@
             <button id="plus">+</button>
           </div>
           <div class="hint">3–10 players, one phone, everyone in the room</div>
+        </div>
+
+        <div class="field">
+          <label>LOCATION PACK</label>
+          <div class="packs" id="setupPacks"></div>
         </div>
 
         <button class="primary" id="startBtn">BEGIN ASSIGNMENTS</button>
@@ -672,7 +702,7 @@
       <!-- LOCATIONS LIST SCREEN -->
       <div class="screen" id="screen-locs">
         <h1>Possible locations</h1>
-        <p class="sub">Every round draws from this list of twelve. Anyone can check this at any time — knowing the list is part of the game.</p>
+        <p class="sub" id="locsSub">Every round draws from this list. Anyone can check it at any time. Knowing the list is part of the game.</p>
         <div class="loc-grid" id="locGrid"></div>
         <button class="primary" id="closeLocsBtn" style="margin-top:20px;">CLOSE</button>
       </div>
@@ -684,7 +714,7 @@
 <script>
 (function(){
 
-  const LOCATIONS = [
+  const CLASSIC = [
     { name: "Airplane", roles: ["Pilot","Co-Pilot","Flight Attendant","Air Marshal","First Class Passenger","Economy Passenger","Mechanic","Child Traveling Alone"] },
     { name: "Bank", roles: ["Teller","Bank Manager","Security Guard","Robber","Loan Officer","Customer","Armored Car Driver","Auditor"] },
     { name: "Beach", roles: ["Lifeguard","Surfer","Ice Cream Vendor","Sunbather","Photographer","Volleyball Player","Fisherman","Tourist"] },
@@ -698,9 +728,34 @@
     { name: "Pirate Ship", roles: ["Captain","First Mate","Cabin Boy","Cook","Navigator","Lookout","Prisoner","Gunner"] },
     { name: "School", roles: ["Principal","Teacher","Student","Janitor","Librarian","Coach","Lunch Lady","Substitute Teacher"] }
   ];
+  
+  const ADVENTURE = [
+    { name: "Ski Resort", roles: ["Ski Instructor","Snowboarder","Ski Patrol","Lift Operator","Beginner Skier","Lodge Bartender","Snowplow Driver","Injured Skier"] },
+    { name: "Zoo", roles: ["Zookeeper","Veterinarian","Tour Guide","Kid on a Field Trip","Popcorn Vendor","Lion","Penguin","Escaped Monkey"] },
+    { name: "Football Stadium", roles: ["Quarterback","Referee","Head Coach","Cheerleader","Team Mascot","Hot Dog Vendor","Fan in Face Paint","Announcer"] },
+    { name: "Arcade", roles: ["Arcade Owner","High Score Champion","Prize Counter Clerk","Kid with a Bucket of Tokens","Birthday Party Guest","Repair Technician","Claw Machine Addict","Bored Parent"] },
+    { name: "F1 Race", roles: ["Driver","Pit Crew Mechanic","Team Principal","Race Engineer","Commentator","Flag Marshal","Safety Car Driver","Fan in the Grandstand"] },
+    { name: "Olympics", roles: ["Gold Medalist","Sprinter","Gymnast","Judge","Coach","Torch Bearer","Drug Tester","Spectator"] },
+    { name: "State Park", roles: ["Park Ranger","Camper","Hiker","Fisherman","Birdwatcher","Scout Leader","Lost Tourist","Bear"] },
+    { name: "University", roles: ["Professor","Freshman","Teaching Assistant","Dean","Campus Security","Frat Member","Librarian","Exhausted Grad Student"] },
+    { name: "Titanic", roles: ["Captain","Lookout","Ship Engineer","First Class Passenger","Third Class Passenger","Band Member","Steward","Shipbuilder"] },
+    { name: "Pyramid", roles: ["Pharaoh","Archaeologist","Tomb Raider","Tour Guide","Mummy","Stone Worker","High Priest","Camel Driver"] }
+  ];
+  
+  const PACKS = {
+    classic: CLASSIC,
+    adventure: ADVENTURE,
+    everything: CLASSIC.concat(ADVENTURE)
+  };
+  const PACK_INFO = [
+    { id:'classic', name:'Classic' },
+    { id:'adventure', name:'Adventure' },
+    { id:'everything', name:'Everything' }
+  ];
 
   let state = {
     playerCount: 6,
+    pack: 'classic',
     currentIndex: 0,
     assignments: [],
     spyIndex: -1,
@@ -739,14 +794,44 @@
   $('minus').onclick = ()=>{ state.playerCount = Math.max(3, state.playerCount-1); $('playerCount').textContent = state.playerCount; };
   $('plus').onclick  = ()=>{ state.playerCount = Math.min(10, state.playerCount+1); $('playerCount').textContent = state.playerCount; };
 
-  function renderLocGrid(){
-    $('locGrid').innerHTML = LOCATIONS.map(l=>`<div>${l.name}</div>`).join('');
+  function packName(id){ const p = PACK_INFO.find(x=>x.id===id); return p ? p.name : 'Classic'; }
+  function renderLocGrid(packId){
+    const wrap = $('locGrid');
+    wrap.innerHTML = '';
+    wrap.className = '';
+    const groups = packId === 'everything' ? ['classic','adventure'] : [packId];
+    groups.forEach(id=>{
+      if(groups.length > 1) wrap.appendChild(el('div', packName(id) + ' (' + PACKS[id].length + ')', 'loc-group'));
+      const grid = el('div', undefined, 'loc-grid');
+      PACKS[id].forEach(l=> grid.appendChild(el('div', l.name)));
+      wrap.appendChild(grid);
+    });
+    $('locsSub').textContent = groups.length > 1
+      ? 'Every location in the game, by pack. The host picks which pack a round draws from.'
+      : 'This round draws from the ' + packName(packId) + ' pack. Anyone can check this list at any time. Knowing it is part of the game.';
   }
-  renderLocGrid();
+  // pack picker: buttons for each pack; onPick is null for players who can't change it
+  function renderPacks(container, current, onPick){
+    const key = current + '|' + !!onPick;
+    if(container.dataset.key === key) return;
+    container.dataset.key = key;
+    container.innerHTML = '';
+    PACK_INFO.forEach(p=>{
+      const b = el('button', p.name, 'pack-btn' + (p.id === current ? ' on' : ''));
+      b.appendChild(el('small', PACKS[p.id].length + ' places'));
+      b.disabled = !onPick;
+      if(onPick) b.onclick = ()=> onPick(p.id);
+      container.appendChild(b);
+    });
+  }
+  function renderSetupPacks(){ renderPacks($('setupPacks'), state.pack, id=>{ state.pack = id; renderSetupPacks(); }); }
+  renderSetupPacks();
   let locsReturn = 'screen-home';
   function openLocs(){
     const cur = document.querySelector('.screen.active');
     if(cur && cur.id !== 'screen-locs') locsReturn = cur.id;
+    const online = ['screen-room','screen-game','screen-result'].includes(locsReturn);
+    renderLocGrid(locsReturn === 'screen-home' ? 'everything' : online ? ((lastState && lastState.pack) || 'classic') : state.pack);
     show('screen-locs');
   }
   ['viewLocsLink','viewLocsLink2','viewLocsLink3','viewLocsLink4'].forEach(id=> $(id).onclick = openLocs);
@@ -895,6 +980,7 @@
       $('roomNote').textContent = st.isHost
         ? (enough ? st.players.length + ' players ready.' : 'Waiting for at least ' + st.minPlayers + ' players to join.')
         : 'Waiting for the host to start the game.';
+      renderPacks($('roomPacks'), st.pack, st.isHost ? choosePack : null);
       $('roomErr').textContent = '';
       goTo('screen-room');
     } else if(st.phase === 'playing'){
@@ -912,9 +998,20 @@
       $('resSpy').textContent = st.reveal.spyName;
       $('resAgain').style.display = st.isHost ? 'block' : 'none';
       $('resNote').textContent = st.isHost ? '' : 'Waiting for the host to start the next round.';
+      $('resPackField').style.display = st.isHost ? 'block' : 'none';
+      if(st.isHost) renderPacks($('resPacks'), st.pack, choosePack);
       $('resErr').textContent = '';
       goTo('screen-result');
     }
+  }
+
+  async function choosePack(id){
+    const errEl = lastState && lastState.phase === 'revealed' ? $('resErr') : $('roomErr');
+    errEl.textContent = '';
+    try{
+      await api('/api/pack', { code:session.code, playerId:session.pid, pack:id });
+      poll();
+    }catch(e){ errEl.textContent = e.message; }
   }
 
   async function guarded(btn, errEl, fn){
@@ -968,7 +1065,8 @@
   // ---- start game: assign roles ----
   $('startBtn').onclick = function(){
     const n = state.playerCount;
-    const loc = LOCATIONS[Math.floor(Math.random()*LOCATIONS.length)];
+    const list = PACKS[state.pack] || PACKS.classic;
+    const loc = list[Math.floor(Math.random()*list.length)];
     const shuffledRoles = [...loc.roles].sort(()=>Math.random()-0.5);
     const spyIndex = Math.floor(Math.random()*n);
 
