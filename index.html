@@ -484,16 +484,16 @@
     width:340px; height:340px;
     mix-blend-mode:multiply;
   }
-  .splat .blob{transform-box:fill-box; transform-origin:center; animation:splat .22s cubic-bezier(.2,1.8,.4,1) both;}
-  .splat .drop{animation:fling .3s cubic-bezier(.1,.9,.3,1) both;}
-  .splat .drip{transform-box:fill-box; transform-origin:top; animation:drip 2.6s cubic-bezier(.3,0,.2,1) .25s both;}
-  @keyframes splat{from{transform:scale(.25);opacity:0;} 40%{opacity:1;} to{transform:none;}}
-  @keyframes fling{from{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0;} to{transform:none;opacity:1;}}
-  @keyframes drip{from{transform:scaleY(0);} to{transform:none;}}
+  /* two plain images: the splash pops in, then the drips run down. Animating
+     the <img> elements (not shapes inside an SVG) keeps it reliable in Safari. */
+  .splat-main{animation:splat .24s cubic-bezier(.2,1.8,.4,1);}
+  .splat-drips{animation:drip 2.6s cubic-bezier(.3,0,.2,1) .25s backwards;}
+  @keyframes splat{from{transform:scale(.25);opacity:.2;} to{transform:none;opacity:1;}}
+  @keyframes drip{from{-webkit-clip-path:inset(0 0 58% 0);clip-path:inset(0 0 58% 0);} to{-webkit-clip-path:inset(0);clip-path:inset(0);}}
   .folder.jolt{animation:jolt .32s ease-out;}
   @keyframes jolt{0%{transform:translate(0,0);} 20%{transform:translate(-6px,3px) rotate(-.6deg);} 45%{transform:translate(5px,-2px) rotate(.4deg);} 70%{transform:translate(-2px,1px);} 100%{transform:none;}}
   @media (prefers-reduced-motion: reduce){
-    .spot, .intro-title, .emblem::before, .splat *, .folder.jolt{animation:none !important;}
+    .spot, .intro-title, .emblem::before, .splat, .folder.jolt{animation:none !important;}
   }
 </style>
 </head>
@@ -865,7 +865,7 @@
 
   // ---- blood splatter: a fresh random splash each reveal ----
   function splatter(screen){
-    const folder = document.querySelector('.folder');
+    const folder = document.querySelector('.stage > .folder');
     const card = screen.querySelector('.card');
     if(!folder || !card) return;
     const R = (a,b)=> a + Math.random()*(b-a);
@@ -898,7 +898,7 @@
       const shape = Math.random() < .4
         ? `<ellipse cx="0" cy="0" rx="${f(s*1.9)}" ry="${f(s*.75)}" transform="translate(${f(x)} ${f(y)}) rotate(${f(deg)})"/>`
         : `<circle cx="${f(x)}" cy="${f(y)}" r="${f(s)}"/>`;
-      drops += `<g class="drop" style="--dx:${f(-Math.cos(a)*dist)}px;--dy:${f(-Math.sin(a)*dist)}px;animation-delay:${f(R(0,60))}ms">${shape}</g>`;
+      drops += shape;
     }
     // a few drips running down from the bottom of the blob
     let drips = '';
@@ -906,24 +906,26 @@
     for(let i=0;i<dripCount;i++){
       const x = C + R(-r0*.8, r0*.8), w = R(4,8), len = R(40,130);
       const top = C + r0*.4;
-      drips += `<g class="drip" style="animation-delay:${f(250+R(0,500))}ms"><rect x="${f(x-w/2)}" y="${f(top)}" width="${f(w)}" height="${f(len)}" rx="${f(w/2)}"/><circle cx="${f(x)}" cy="${f(top+len-w/2)}" r="${f(w*.85)}"/></g>`;
+      drips += `<g><rect x="${f(x-w/2)}" y="${f(top)}" width="${f(w)}" height="${f(len)}" rx="${f(w/2)}"/><circle cx="${f(x)}" cy="${f(top+len-w/2)}" r="${f(w*.85)}"/></g>`;
     }
-    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
-    svg.setAttribute('class','splat');
-    svg.setAttribute('viewBox','0 0 340 340');
-    svg.setAttribute('aria-hidden','true');
-    svg.innerHTML =
-      `<g fill="${DARK}" transform="translate(3 4)" opacity=".55"><path class="blob" d="${d}"/></g>` +
-      `<g fill="${RED}"><path class="blob" d="${d}"/>${drips}${drops}</g>` +
-      `<g fill="#fff" opacity=".35"><ellipse cx="${f(C-r0*.3)}" cy="${f(C-r0*.35)}" rx="${f(r0*.22)}" ry="${f(r0*.1)}" transform="rotate(-30 ${f(C-r0*.3)} ${f(C-r0*.35)})"/></g>`;
+    const rot = f(R(-12,12));
+    const wrap = body => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 340" width="340" height="340"><g transform="rotate(${rot} ${C} ${C})">${body}</g></svg>`);
+    const main =
+      `<path d="${d}" fill="${DARK}" opacity=".55" transform="translate(3 4)"/>` +
+      `<g fill="${RED}"><path d="${d}"/>${drops}</g>` +
+      `<ellipse cx="${f(C-r0*.3)}" cy="${f(C-r0*.35)}" rx="${f(r0*.22)}" ry="${f(r0*.1)}" fill="#fff" opacity=".35" transform="rotate(-30 ${f(C-r0*.3)} ${f(C-r0*.35)})"/>`;
     // land it on the card, off-centre so the splash bleeds onto the paper around it
-    folder.appendChild(svg);
     const fb = folder.getBoundingClientRect(), cb = card.getBoundingClientRect();
-    const hx = cb.left - fb.left + cb.width * R(.62,.9);
-    const hy = cb.top - fb.top + cb.height * R(.05,.35);
-    svg.style.left = (hx - C) + 'px';
-    svg.style.top = (hy - C) + 'px';
-    svg.style.transform = `rotate(${f(R(-12,12))}deg)`;
+    const left = cb.left - fb.left + cb.width * R(.62,.9) - C;
+    const top = cb.top - fb.top + cb.height * R(.05,.35) - C;
+    [[`<g fill="${RED}">${drips}</g>`,'splat-drips'],[main,'splat-main']].forEach(([body,cls])=>{
+      const img = new Image(340,340);
+      img.alt = ''; img.className = 'splat ' + cls;
+      img.src = wrap(body);
+      img.style.left = left + 'px'; img.style.top = top + 'px';
+      folder.appendChild(img);
+    });
     folder.classList.remove('jolt'); void folder.offsetWidth; folder.classList.add('jolt');
   }
 
